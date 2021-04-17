@@ -1,0 +1,57 @@
+<html>
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+  <link href="https://fonts.googleapis.com/css?family=Times New Roman|Times New Roman" rel="stylesheet">
+  <link rel='icon' href="{{url_for('static', filename='logo.png')}}">
+</head>
+<body>
+  <div class="sticky">
+    <h1>Интернет-магазин</h1>
+  </div>
+  <div class="nav">
+    <p><a href="/">Домашняя страница</a> > <a href="">Создать аккаунт</a></p>
+  </div>
+  {% if not ok %}
+    <p>Аккаунт с таким email уже существует. Пожалуйста, введите другой email.</p>
+  {% endif %}
+  <form action="" method="POST" onsubmit="return checkEqual()">
+    <h2>Создать аккаунт:</h2>
+    <table>
+    <tr>
+      <td>ТИП АККАУНТА: </td>
+      <td>
+        <input type="radio" value="Customer" name="type" checked>Customer &nbsp &nbsp <input type="radio" value="Seller" name="type">Seller
+      </td>
+    </tr>
+    <tr>
+      <td>ИМЯ :</td><td><input type="text" name="name" required></td>
+    </tr>
+    <tr>
+      <td>EMAIL :</td><td><input type="email" name="email" required></td>
+    </tr>
+    <tr>
+      <td>ТЕЛЕФОН :</td><td><input type="tel" name="phone" required></td>
+    </tr>
+    <tr>
+      <td><b>АДРЕС:</b></td>
+    </tr>
+    <tr>
+      <td>АДРЕС :</td><td><input type="text" name="address" required></td>
+    </tr>
+    <tr>
+      <td>ГОРОД :</td><td><input type="text" name="city" required></td>
+    </tr>
+    <tr>
+      <td>СТРАНА :</td><td><input type="text" name="country" required></td>
+    </tr>
+    <tr>
+      <td>ПАРОЛЬ :</td><td><input type="password" name="password" required></td>
+    </tr>
+    <tr>
+      <td>ПАРОЛЬ ПОВТОРНО :</td><td><input type="password" name="cnfrm_psswd" required></td>
+    </tr>
+    </table>
+    <p><input type="submit" value="ЗАРЕГИСТРИРОВАТЬСЯ" style="display:block; margin-left:auto; margin-right:auto; margin-top:1vw;"></p>
+  </form>
+</body>
+</html>
