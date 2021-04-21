@@ -1,0 +1,58 @@
+<html>
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+  <link href="https://fonts.googleapis.com/css?family=Acme|K2D" rel="stylesheet">
+  <link rel='icon' href="{{url_for('static', filename='logo.png')}}">
+</head>
+<body>
+  <div class="sticky">
+    <h1>Интернет-магазин</h1>
+  </div>
+  <div class="nav">
+    <p><a href="/">Домашняя страница</a> > <a href="">Sell</a></p>
+  </div>
+  <ul class="headbar">
+    <li><a href="">Мои продукты</a></li>
+    <li><a href="./neworders">Новые заказы</a></li>
+    <li><a href="./addproducts">Добавить новые продукты</a></li>
+    <li><a href="./sales">Мои продажи</a></li>
+  </ul>
+  <div class="centerthis">
+  <form action="" method="POST" onsubmit="return checkSelect()">
+    <h3><input type="radio" value="by keyword" name="search method" checked>Искать по названию</h3>
+    <input type="search" name="keyword" value="">
+    <br>
+   <h3><input type="radio" value="by category" name="search method">Искать по категории</h3>
+   <select name="category">
+    <option value="" disabled selected>ВЫБРАТЬ КАТЕГОРИЮ</option>
+    {% for item in categories %}
+    <option value="{{item}}">{{item}}</option>
+    {% endfor %}
+   </select>
+   <br>
+   <h3><input type="radio" value="both" name="search method">Both</h3>
+   <br>
+   <p><input type="submit" value="ИСКАТЬ"></p>
+ </form>
+</div>
+ <br><br>
+ {% if after_srch %}
+  {% if results|length==0 %}
+    <p>Нет результатов, удовлетворяющих запросу</p>
+  {% else %}
+ <table>
+   <tr>
+     <th>№</th><th>Название</th><th>Количество</th><th>Категория</th><th>Цена</th><th></th>
+   </tr>
+   {% set cnt={'val':1} %}
+   {% for i in results %}
+   <tr>
+     <td>{{cnt['val']}}</td> <td>{{i[1]}}</td>  <td>{{i[2]}}</td>    <td>{{i[3]}}</td>  <td>{{i[4]}}</td>  <td><a href="/viewproduct/{{i[0]}}">Смотреть</a></td>
+   </tr>
+   {% if cnt.update({'val':(cnt['val']+1)}) %}{% endif %}
+   {% endfor %}
+ </table>
+ {% endif %}
+ {% endif %}
+</body>
+</html>

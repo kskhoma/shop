@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+        <link href="https://fonts.googleapis.com/css?family=Acme|K2D" rel="stylesheet">
+        <link rel='icon' href="{{url_for('static', filename='logo.png')}}">
+      </head>
+<body>
+    <div class="sticky">
+        <h1>Интернет-магазин</h1>
+    </div>
+  <div class="nav">
+    <p><a href="/">Домашняя страница</a> > <a href="/viewprofile/">Смотреть профили</a> > <a href="">Профидь пользователя</a></p>
+  </div>
+  <h2>ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ</h2>
+  {{type}} аккаунт
+  <table>
+    <tr>
+      <td>ИМЯ :</td><td>{{name}}</td>
+    </tr>
+    <tr>
+      <td>EMAIL :</td><td>{{email}}</td>
+    </tr>
+    <tr>
+      <td>ТЕЛЕФОН :</td><td>{{phone}}</td>
+    </tr>
+    {% if type=="Seller" %}
+    <tr>
+      <td>СДЕЛКИ В :</td>
+      <td>{% for i in category %}
+        {{i}},
+      {% endfor %}</td>
+    </tr>
+    {% endif %}
+    <tr>
+      <td>АДРЕС :</td><td>{{address}}, {{city}}, {{country}}</td>
+    </tr>
+  </table>
+  {% if my %}
+  <p class="press"><a href="/editprofile/">Редактировать профиль</a></p>
+  {% endif %}
+  {% if not my and type!="Customer" %}
+  <p class="press"><a href="./sellerproducts">Смотреть продукты этого продавца</a></p>
+  {% endif %}
+</body>
+</html>

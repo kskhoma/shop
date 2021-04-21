@@ -1,0 +1,44 @@
+<html>
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+  <link href="https://fonts.googleapis.com/css?family=Acme|K2D" rel="stylesheet">
+  <link rel='icon' href="{{url_for('static', filename='logo.png')}}">
+</head>
+<body>
+  <div class="sticky">
+    <h1>Интернет-магазин</h1>
+  </div>
+  <div class="nav">
+    <p><a href="/">Домашняя страница</a> > <a href="/sell">Продать</a> > <a href="">Новые заказы</a></p>
+  </div>
+  <h2>Новые заказы</h2>
+  {% if orders|length==0 %}
+  <p>У Вас нет новых заказов.</p>
+  {% else %}
+  <table>
+    <tr>
+      <th>№</th><th>ПРОДУКТ</th><th>КОЛИЧЕСТВО ДЛЯ ДОСТАВКИ</th>
+      <th>ДОСТУПНОЕ КОЛИЧЕСТВО</th><th>ВСЕГО</th><th>ВРЕМЯ</th><th>СТАТУС</th><th></th><th></th>
+    </tr>
+    {% set cnt={'val':1} %}
+    {% for i in orders %}
+    <tr>
+      <td>{{cnt['val']}}</td><td><a href="/viewproduct/{{i[1]}}">{{i[2]}}</a></td><td>{{i[3]}}</td><td>{{i[4]}}</td>
+      <td>{{i[5]}}</td><td>{{i[6]}}</td><td>{{i[7]}}</td>
+      {% if i[7]=="PLACED" %}
+      {% if i[3]<=i[4] %}
+      <td><p class="press"><a href="/dispatch/{{i[0]}}">Отправить заказ</a></p></td>
+      {% else %}
+      <td>Недостаточный запас</td>
+      {% endif %}
+      <td><p class="press"><a href="/cancel/{{i[0]}}">Отменить заказ</a></p></td>
+      {% else %}
+      <td></td><td></td>
+      {% endif %}
+    </tr>
+    {%if cnt.update({'val':(cnt['val']+1)}) %}{% endif %}
+    {% endfor %}
+  </table>
+  {% endif %}
+</body>
+</html>

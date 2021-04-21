@@ -1,0 +1,43 @@
+<html>
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+  <link href="https://fonts.googleapis.com/css?family=Acme|K2D" rel="stylesheet">
+  <link rel='icon' href="{{url_for('static', filename='logo.png')}}">
+</head>
+<body>
+  <div class="sticky">
+    <h1>Интернет-магазин</h1>
+  </div>
+  <div class="nav">
+    <p><a href="/">Домашняя страница</a> > <a href="/sell">Продать</a> > <a href="/viewproduct/">Посмотреть продукт</a> > <a href="/viewproduct/{{prodID}}">{{name}}</a> > <a href="">Редактировать</a></p>
+  </div>
+  <h2>Редактировать продукт</h2>
+  <form action="" method="POST">
+    <table>
+      <tr>
+        <td>НАЗВАНИЕ :</td><td><input type="text" name="name" value="{{name}}" required></td>
+      </tr>
+      <tr>
+        <td>КОЛИЧЕСТВО :</td><td><input type="number" name="qty" value="{{qty}}" min="0" required></td>
+      </tr>
+      <tr>
+        <td>КАТЕГОРИЯ :</td>
+        <td><select name="category" required>
+          <option value="БРЮКИ" {% if category=="БРЮКИ" %}selected{% endif %}>БРЮКИ</option>
+          <option value="БЛУЗЫ" {% if category=="БЛУЗЫ" %}selected{% endif %}>БЛУЗЫ</option>
+          <option value="ПАЛЬТО" {% if category=="ПАЛЬТО" %}selected{% endif %}>ПАЛЬТО</option>
+          <option value="СВИТЕРА" {% if category=="СВИТЕРА" %}selected{% endif %}>СВИТЕРА</option>
+          <option value="ЮБКИ" {% if category=="ЮБКИ" %}selected{% endif %}>ЮБКИ</option>
+        </select></td>
+      </tr>
+      <tr>
+        <td>ЦЕНА :</td><td><input type="number" name="price" value="{{price}}" min="0" required></td>
+      </tr>
+      <tr>
+        <td>ОПИСАНИЕ :</td><td><textarea name="desp">{{desp}}</textarea></td>
+      </tr>
+    </table>
+    <input type="submit" value="Подтвердить изменения" style="display:block; margin-left:auto; margin-right:auto; margin-top:1vw;">
+  </form>
+</body>
+</html>

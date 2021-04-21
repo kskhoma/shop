@@ -1,0 +1,40 @@
+<html>
+<head>
+  <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+  <link href="https://fonts.googleapis.com/css?family=Acme|K2D" rel="stylesheet">
+  <link rel='icon' href="{{url_for('static', filename='logo.png')}}">
+</head>
+<body>
+  <div class="sticky">
+    <h1>Интернет-магазин</h1>
+  </div>
+  <div class="nav">
+    <p><a href="/">Домашняя страница</a> > <a href="">Редактировать профиль</a></p>
+  </div>
+  <h2>Редактирование профиля</h2>
+  Вы вошли как {{name}} -> {{type}} аккаунт
+  <form action="" method="POST" onsubmit="return validateForm()">
+  <table>
+    <tr>
+      <td>EMAIL :</td><td>{{email}}</td>
+    </tr>
+    <tr>
+      <td>ТЕЛЕФОН :</td><td><input type="tel" name="phone" value="{{phone}}" id="phone"></td>
+    </tr>
+    <tr>
+      <td><b>АДРЕС :</b></td>
+    </tr>
+    <tr>
+      <td>АДРЕС :</td><td><input type="text" name="address" value="{{address}}" class="address"></td>
+    </tr>
+    <tr>
+      <td>ГОРОД :</td><td><input type="text" name="city" value="{{city}}" class="place"></td>
+    </tr>
+    <tr>
+      <td>СТРАНА :</td><td><input type="text" name="country" value="{{country}}" class="place"></td>
+    </tr>
+  </table>
+  <input type="submit" value="Сохранить изменения" style="display:block; margin-left:auto; margin-right:auto; margin-top:1vw;">
+</form>
+</body>
+</html>
