@@ -9,4 +9,4 @@ class Metad(SqlAlchemyBase):
     seller_num = sqlalchemy.Column(sqlalchemy.Integer)
     product_num = sqlalchemy.Column(sqlalchemy.Integer)
     order_num = sqlalchemy.Column(sqlalchemy.Integer)
-    profit_rate = sqlalchemy.Column(sqlalchemy.DECIMAL)
+    profit_rate = sqlalchemy.Column(sqlalchemy.DECIMAL, default=1.1)

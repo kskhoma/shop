@@ -75,7 +75,6 @@ def new_user(data):
             data["password"])
     if data['type'] == "Customer":
         user = User()
-        user.id = custID_generation()
         user.name = tuple[0]
         user.email = tuple[1]
         user.phone = tuple[2]
@@ -87,7 +86,6 @@ def new_user(data):
         db_sess.commit()
     elif data['type'] == "Seller":
         seller = Seller()
-        seller.id = sellID_generation()
         seller.name = tuple[0]
         seller.email = tuple[1]
         seller.phone = tuple[2]
@@ -126,7 +124,7 @@ def get_details(userid, type):
     elif type == "Seller":
         a = db_sess.query(Seller).filter(Seller.sellID == userid)[0]
         b = db_sess.query(Product).filter(Product.sellID == userid).distinct(Product.category)
-        b = [i[0] for i in b]
+        b = [i.category for i in b]
     return a, b
 
 
@@ -185,25 +183,23 @@ def set_password(psswd, userid, type):
 
 def add_product(sellID, data):
     db_sess = db_session.create_session()
-    prodID = prodID_generation()
-    tup = (prodID,
+    tup = (
            data["name"],
            data["qty"],
            data["category"],
-           data["price1"],
-           data["price2"],
+           data["price"],
            data["desc"],
            sellID)
-    profit = db_sess.query(Metad).profit_rate
+   # profit = db_sess.query(Metad).all()[0]
+   # profit = profit.profit_rate
     prod = Product()
-    prod.prodID = prodID
-    prod.name = tup[1]
-    prod.quantity = tup[2]
-    prod.category = tup[3]
-    prod.cost_price = tup[4]
-    prod.sell_price = int(tup[5]) * int(profit)
-    prod.description = tup[6]
-    prod.sellID = tup[7]
+    prod.name = tup[0]
+    prod.quantity = tup[1]
+    prod.category = tup[2]
+    prod.cost_price = tup[3]
+    prod.sell_price = int(tup[3]) * 1.1
+    prod.description = tup[4]
+    prod.sellID = tup[5]
     db_sess.add(prod)
     db_sess.commit()
 
@@ -211,7 +207,7 @@ def add_product(sellID, data):
 def get_categories(sellID):
     db_sess = db_session.create_session()
     a = db_sess.query(Product).filter(Product.sellID == sellID).distinct(Product.category)
-    categories = [i[0] for i in a]
+    categories = [i.category for i in a]
     return categories
 
 
@@ -262,7 +258,7 @@ def update_product(data, id):
     product.quantity = data['qty']
     product.category = data['category']
     product.cost_price = data['price']
-    product.sell_price = a.profit_rate * data['price']
+    product.sell_price = 1.1 * data['price']
     product.description = data['desp']
     db_sess.commit()
 
@@ -321,8 +317,8 @@ def place_order(prodID, custID, qty):
 def customer_orders(custID):
     db_sess = db_session.create_session()
     o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                    Order.status == 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
+                                    Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
+    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
     a = (o.orderID, o.prodID, p.name, o.quantity, o.sell_price, o.date, o.status)
     res = [i for i in a]
     return res
@@ -511,15 +507,15 @@ def view_profile(id):
     det, categories = get_details(id, profile_type)   #details
     if len(det) == 0:
         abort(404)
-    det = det[0]
+    det = det.sellID
     return render_template("view_profile.html",
                             type=profile_type,
-                            name=det[1],
-                            email=det[2],
-                            phone=det[3],
-                            address=det[4],
-                            city=det[5],
-                            country=det[6],
+                            name=det.name,
+                            email=det.email,
+                            phone=det.phone,
+                            address=det.address,
+                            city=det.city,
+                            country=det.country,
                             category=(None if profile_type == "Customer" else categories),
                             my=my)
 
@@ -567,15 +563,18 @@ def edit_profile():
         userid = session["userid"]
         type = session["type"]
         det, _ = get_details(userid, type)
-        det = det[0]
+        if type == 'Customer':
+            det = det.custID
+        elif type == 'Seller':
+            det = det.sellID
         return render_template("edit_profile.html",
                                 type=type,
-                                name=det[1],
-                                email=det[2],
-                                phone=det[3],
-                                address=det[4],
-                                city=det[5],
-                                country=det[6])
+                                name=det.name,
+                                email=det.email,
+                                phone=det.phone,
+                                address=det.address,
+                                city=det.city,
+                                country=det.country)
 
 
 @app.route("/changepassword/", methods=["POST", "GET"])
@@ -617,16 +616,17 @@ def my_products():
 
 
 @app.route("/sell/addproducts/", methods=["POST", "GET"])
-def add_productucts():
+def add_products():
     if 'userid' not in session:
         return redirect(url_for('home'))
     if session["type"] == "Customer":
         abort(403)
     if request.method == "POST":
         data = request.form
+        print(data)
         add_product(session['userid'],data)
         return redirect(url_for('my_products'))
-    return render_template("add_productucts.html")
+    return render_template("add_products.html")
 
 
 @app.route("/viewproduct/")
