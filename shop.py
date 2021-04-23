@@ -17,46 +17,6 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 sess = Session()
 
 
-def custID_generation():
-    db_sess = db_session.create_session()
-    cust = Metad()
-    cust.customer_num = str(cust.customer_num) + '1'
-    db_sess.commit()
-    cust = str([i for i in cust.customer_num][0][0])
-    id = "CID" + "0" * (7 - len(cust)) + cust
-    return id
-
-
-def sellID_generation():
-    db_sess = db_session.create_session()
-    sell = Metad()
-    sell.seller_num = str(sell.seller_num) + '1'
-    db_sess.commit()
-    sell = str([i for i in sell.seller_num][0][0])
-    id = "SID" + "0" * (7 - len(sell)) + sell
-    return id
-
-
-def prodID_generation():
-    db_sess = db_session.create_session()
-    prod = Metad()
-    prod.product_num = str(prod.product_num) + '1'
-    db_sess.commit()
-    prod = str([i for i in prod.product_num][0][0])
-    id = "PID" + "0 " * (7 - len(prod)) + prod
-    return id
-
-
-def orderID_generation():
-    db_sess = db_session.create_session()
-    order = Metad()
-    order.order_num = str(order.order_num) + '1'
-    db_sess.commit()
-    order = str([i for i in order.order_num][0][0])
-    id = "OID" + "0" * (7 - len(order)) + order
-    return id
-
-
 def new_user(data):
     db_sess = db_session.create_session()
     email = data["email"]
@@ -217,14 +177,14 @@ def my_product_search(sellID, srchBy, category, keyword):
     if len(keyword) == 0:
         keyword.append('%%')
     if srchBy == "по категории":
-        a = db_sess.query(Product).filter(Product.sellID == sellID, Product.category == category)
+        a = db_sess.query(Product).filter(Product.sellID == sellID, Product.category == category)[0]
         a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
         res = [i for i in a]
-    elif srchBy == "by keyword":
+    elif srchBy == "по названию":
         res = []
         for word in keyword:
             a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word)) |
-                                               (Product.category.like(word))), Product.sellID == sellID)
+                                               (Product.category.like(word))), Product.sellID == sellID)[0]
             a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
             res += list(a)
         res = list(set(res))
@@ -232,7 +192,7 @@ def my_product_search(sellID, srchBy, category, keyword):
         res = []
         for word in keyword:
             a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word))),
-                                              Product.sellID == sellID, Product.category == category)
+                                              Product.sellID == sellID, Product.category == category)[0]
             a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
             res += list(a)
         res = list(set(res))
@@ -271,7 +231,7 @@ def search_products(srchBy, category, keyword):
         a = db_sess.query(Product).filter(Product.category == category, Product.quantity != 0)[0]
         a = (a.prodID, a.name, a.category, a.sell_price)
         res = [i for i in a]
-    elif srchBy == "by keyword":
+    elif srchBy == "по названию":
         res = []
         for word in keyword:
             a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word)) | (Product.category.like(word))), Product.quantity != 0)[0]
@@ -299,18 +259,16 @@ def get_seller_products(sellID):
 
 def place_order(prodID, custID, qty):
     db_sess = db_session.create_session()
-    orderID = orderID_generation()
     ord = Order()
     a = db_sess.query(Product).filter(Product.prodID == prodID)
-    a = (orderID, custID, prodID, qty, datetime.datetime.now(), a.cost_price * qty, a.sell_price * qty, 'PLACED')
-    ord.orderID = a[0]
-    ord.custID = a[1]
-    ord.prodID = a[2]
-    ord.quantity = a[3]
-    ord.date = a[4]
-    ord.cost_price = a[5]
-    ord.sell_price = a[6]
-    ord.status = a[7]
+    a = (custID, prodID, qty, datetime.datetime.now(), a.cost_price * qty, a.sell_price * qty, 'PLACED')
+    ord.custID = a[0]
+    ord.prodID = a[1]
+    ord.quantity = a[2]
+    ord.date = a[3]
+    ord.cost_price = a[4]
+    ord.sell_price = a[5]
+    ord.status = a[6]
     db_sess.commit()
 
 
@@ -326,12 +284,19 @@ def customer_orders(custID):
 
 def seller_orders(sellID):
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.sellID == sellID,
-                                    Order.status == 'RECIEVED').order_by(Order.date.decs())
+    o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Product.sellID == sellID,
+                                    Order.status == 'RECIEVED').order_by(Order.date.desc())
     p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
-    a = (o.orderID, o.prodID, p.name, o.quantity, p.quantity, o.cost_price, o.date, o.status)
-    res = [i for i in a]
-    return res
+    if o.count() != 0 and p.count() != 0:
+        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Product.sellID == sellID,
+                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
+        p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
+        a = (o.orderID, o.prodID, p.name, o.quantity, p.quantity, o.cost_price, o.date, o.status)
+        res = [i for i in a]
+        return res
+    else:
+        res = ''
+        return res
 
 
 def get_order_details(orderID):
@@ -370,11 +335,18 @@ def seller_sales(sellID):
     db_sess = db_session.create_session()
     o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == User.custID,
                                     Order.status == 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID, Product.sellID == sellID)[0]
-    c = db_sess.query(User).filter(User.custID == Order.custID)
-    a = (o.prodID, p.name, o.quantity, o.sell_price, o.date, o.custID, c.name)
-    res = [i for i in a]
-    return res
+    p = db_sess.query(Product).filter(Product.prodID == Order.prodID, Product.sellID == sellID)
+    if o.count() != 0 and p.count() != 0:
+        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == User.custID,
+                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
+        p = db_sess.query(Product).filter(Product.prodID == Order.prodID, Product.sellID == sellID)[0]
+        c = db_sess.query(User).filter(User.custID == Order.custID)
+        a = (o.prodID, p.name, o.quantity, o.sell_price, o.date, o.custID, c.name)
+        res = [i for i in a]
+        return res
+    else:
+        res = ''
+        return res
 
 
 def add_product_to_cart(prodID, custID):
@@ -419,19 +391,18 @@ def cart_purchase(custID):
     db_sess = db_session.create_session()
     cart = get_cart(custID)
     for item in cart:
-        orderID = orderID_generation()
         prodID = item[0]
         qty = item[3]
         prod = db_sess.query(Product).filter(Product.prodID == prodID).first()
-        prod = (orderID, custID, prodID, qty, prod.cost_price * qty, prod.sell_price * qty)
+        prod = (custID, prodID, qty, prod.cost_price * qty, prod.sell_price * qty)
         purchase = Order()
         purchase.orderID = prod[0]
-        purchase.custID = prod[1]
-        purchase.prodID = prod[2]
-        purchase.quantity = prod[3]
+        purchase.custID = prod[0]
+        purchase.prodID = prod[1]
+        purchase.quantity = prod[2]
         purchase.date = datetime.datetime.now()
-        purchase.cost_price = prod[4]
-        purchase.sell_price = prod[5]
+        purchase.cost_price = prod[3]
+        purchase.sell_price = prod[4]
         purchase.status = 'PLACED'
         db_sess.add(purchase)
         p = db_sess.query(Cart).filter(Cart.custID == custID, Cart.prodID == prodID).first()
@@ -607,8 +578,8 @@ def my_products():
     categories = get_categories(session["userid"])
     if request.method == "POST":
         data = request.form
-        srchBy = data["search method"]
-        category = None if srchBy == 'by keyword' else data["category"]
+        srchBy = data["метод поиска"]
+        category = None if srchBy == 'по названию' else data["category"]
         keyword = data["keyword"]
         results = my_product_search(session['userid'], srchBy, category, keyword)
         return render_template('my_products.html', categories=categories, after_srch=True, results=results)
@@ -680,8 +651,8 @@ def buy():
         abort(403)
     if request.method == "POST":
         data = request.form
-        srchBy = data["search method"]
-        category = None if srchBy == 'by keyword' else data["category"]
+        srchBy = data["метод поиска"]
+        category = None if srchBy == 'по названию' else data["category"]
         keyword = data["keyword"]
         results = search_products(srchBy, category, keyword)
         return render_template('search_products.html', after_srch=True, results=results)

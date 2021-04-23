@@ -19,10 +19,11 @@
   </ul>
   <div class="centerthis">
   <form action="" method="POST" onsubmit="return checkSelect()">
-    <h3><input type="radio" value="by keyword" name="search method" checked>Искать по названию</h3>
+    <br>
+    <h3><input type="radio" value="по названию" name="метод поиска" checked>Искать по названию</h3>
     <input type="search" name="keyword" value="">
     <br>
-   <h3><input type="radio" value="by category" name="search method">Искать по категории</h3>
+   <h3><input type="radio" value="по категории" name="метод поиска">Искать по категории</h3>
    <select name="category">
     <option value="" disabled selected>ВЫБРАТЬ КАТЕГОРИЮ</option>
     {% for item in categories %}
@@ -30,7 +31,7 @@
     {% endfor %}
    </select>
    <br>
-   <h3><input type="radio" value="both" name="search method">Both</h3>
+   <h3><input type="radio" value="оба" name="метод поиска">Both</h3>
    <br>
    <p><input type="submit" value="ИСКАТЬ"></p>
  </form>
