@@ -24,13 +24,13 @@
     {% if found %}
     <table>
       <tr>
-        <th>№</th><th>НАЗВАНИЕ</th><th>EMAIL</th><th>ТЕЛЕФОН</th><th>АДРЕС</th>
+        <th>№</th><th>ИМЯ</th><th>EMAIL</th><th>ТЕЛЕФОН</th><th>АДРЕС</th>
       </tr>
       {% set cnt={'val':1} %}
       {% for items in results %}
       <tr>
         <td>{{cnt['val']}}</td><td><a href="/viewprofile/{{items[0]}}">{{items[1]}}</a></td>
-        <td>{{items[2]}}</td><td>{{items[3]}}</td><td>{{items[4]}}, {{items[5]}}, {{items[6]}}, {{items[7]}}, {{items[8]}}</td><td>{{items[9]}}</td>
+        <td>{{items[2]}}</td><td>{{items[3]}}</td><td>{{items[4]}}, {{items[5]}}, {{items[6]}}</td>
       </tr>
       {%if cnt.update({'val':(cnt['val']+1)}) %}{% endif %}
       {% endfor %}

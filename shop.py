@@ -166,7 +166,7 @@ def add_product(sellID, data):
 
 def get_categories(sellID):
     db_sess = db_session.create_session()
-    a = db_sess.query(Product).filter(Product.sellID == sellID).distinct(Product.category)
+    a = db_sess.query(Product.category).filter(Product.sellID == sellID).distinct()
     categories = [i.category for i in a]
     return categories
 
@@ -176,7 +176,9 @@ def my_product_search(sellID, srchBy, category, keyword):
     keyword = ['%'+i+'%' for i in keyword.split()]
     if len(keyword) == 0:
         keyword.append('%%')
-    if srchBy == "по категории":
+    if category == '':
+        res = ''
+    elif srchBy == "по категории":
         a = db_sess.query(Product).filter(Product.sellID == sellID, Product.category == category)[0]
         a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
         res = [i for i in a]
@@ -186,23 +188,23 @@ def my_product_search(sellID, srchBy, category, keyword):
             a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word)) |
                                                (Product.category.like(word))), Product.sellID == sellID)[0]
             a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
-            res += list(a)
-        res = list(set(res))
-    elif srchBy == "both":
+            res.append(list(a))
+    elif srchBy == "оба":
         res = []
         for word in keyword:
             a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word))),
                                               Product.sellID == sellID, Product.category == category)[0]
             a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
-            res += list(a)
-        res = list(set(res))
+            res.append(list(a))
+        if len(res) == 0:
+            res = ''
     return res
 
 
 def product_info(id):
     db_sess = db_session.create_session()
     a = db_sess.query(Product).filter(Product.prodID == id)[0]
-    b = db_sess.query(Seller).filter(Product.sellID == Seller.sellID)
+    b = db_sess.query(Seller).filter(Seller.sellID == Product.sellID)[0]
     a = (a.name, a.quantity, a.category, a.cost_price, a.sell_price, a.sellID, a.description, b.name)
     res = [i for i in a]
     if len(res) == 0:
@@ -236,16 +238,14 @@ def search_products(srchBy, category, keyword):
         for word in keyword:
             a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word)) | (Product.category.like(word))), Product.quantity != 0)[0]
             a = (a.prodID, a.name, a.category, a.sell_price)
-            res += list(a)
-        res = list(set(res))
+            res.append(list(a))
     elif srchBy == "оба":
         res = []
         for word in keyword:
             a = db_sess.query(Product).filter(((Product.name == word) | (Product.description == word)),
                                               Product.quantity != 0, Product.category == category)[0]
             a = (a.prodID, a.name, a.category, a.sell_price)
-            res += list(a)
-        res = list(set(res))
+            res.append(list(a))
     return res
 
 
@@ -275,11 +275,18 @@ def place_order(prodID, custID, qty):
 def customer_orders(custID):
     db_sess = db_session.create_session()
     o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                    Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
-    a = (o.orderID, o.prodID, p.name, o.quantity, o.sell_price, o.date, o.status)
-    res = [i for i in a]
-    return res
+                                    Order.status == 'RECIEVED').order_by(Order.date.desc())
+    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
+    if o.count() != 0 and p.count() != 0:
+        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
+                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
+        p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
+        a = (o.orderID, o.prodID, p.name, o.quantity, o.sell_price, o.date, o.status)
+        res = [i for i in a]
+        return res
+    else:
+        res = ''
+        return res
 
 
 def seller_orders(sellID):
@@ -317,7 +324,7 @@ def change_order_status(orderID, new_status):
         c = c.prodID
         b = db_sess.query(Product).filter(Product.prodID == c)[0]
         d = c.quantity
-        b.quantity = Product.quantity - d
+        b.quantity = int(Product.quantity) - int(d)
     db_sess.commit()
 
 
@@ -325,10 +332,17 @@ def customer_purchases(custID):
     db_sess = db_session.create_session()
     o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
                                     Order.status == 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
-    a = (o.prodID, p.name, o.quantity, o.sell_price, o.date)
-    res = [i for i in a]
-    return res
+    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
+    if o.count() != 0 and p.count() != 0:
+        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
+                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
+        p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
+        a = (o.prodID, p.name, o.quantity, o.sell_price, o.date)
+        res = [i for i in a]
+        return res
+    else:
+        res = ''
+        return res
 
 
 def seller_sales(sellID):
@@ -475,7 +489,7 @@ def view_profile(id):
         profile_type = "Customer" if type == "Seller" else "Seller"
     else:
         profile_type = type
-    det, categories = get_details(id, profile_type)   #details
+    det, categories = get_details(id, profile_type)
     if len(det) == 0:
         abort(404)
     det = det.sellID
@@ -511,7 +525,7 @@ def seller_products(id):
         return redirect(url_for('home'))
     if session["type"] == "Seller":
         abort(403)
-    det, categories = get_details(id, "Seller")   #details
+    det, categories = get_details(id, "Seller")
     if len(det) == 0:
         abort(404)
     det = det[0]
@@ -594,7 +608,6 @@ def add_products():
         abort(403)
     if request.method == "POST":
         data = request.form
-        print(data)
         add_product(session['userid'],data)
         return redirect(url_for('my_products'))
     return render_template("add_products.html")
@@ -619,9 +632,11 @@ def view_product(id):
     if not ispresent:
         abort(404)
     (name, quantity, category, cost_price, sell_price, sellID, desp, sell_name) = tup
-    if type == "Seller" and sellID!=session['userid']:
+    if type == "Seller" and sellID != session['userid']:
         abort(403)
-    return render_template('view_product.html', type=type, name=name, quantity=quantity, category=category, cost_price=cost_price, sell_price=sell_price, sell_id=sellID, sell_name=sell_name, desp=desp, prod_id=id)
+    return render_template('view_product.html', type=type, name=name, quantity=quantity, category=category,
+                           cost_price=cost_price, sell_price=sell_price, sell_id=sellID, sell_name=sell_name,
+                           desp=desp, prod_id=id)
 
 
 @app.route("/viewproduct/<id>/edit/", methods=["POST", "GET"])

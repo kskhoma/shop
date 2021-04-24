@@ -31,9 +31,6 @@
     <option value="Sweaters">СВИТЕРА</option>
     <option value="Skirts">ЮБКИ</option>
    </select>
-   <br>
-   <h3><input type="radio" value="оба" name="метод поиска">Оба</h3>
-   <br>
    <p><input type="submit" value="ИСКАТЬ"></p>
   </form>
   </div>
@@ -58,5 +55,6 @@
  </table>
  {% endif %}
  {% endif %}
+ <script type="text/javascript" src="{{url_for('static', filename='check.js')}}"></script>
 </body>
 </html>

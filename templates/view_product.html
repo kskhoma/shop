@@ -27,8 +27,8 @@
             </tr>
             <tr>
                 <td>Цена :</td>
-                {% if type=="Seller" %}<td>₹ {{cost_price}}</td>
-                {% else %}<td>₹ {{sell_price}}</td>{% endif %}
+                {% if type=="Seller" %}<td>{{cost_price}}</td>
+                {% else %}<td>{{sell_price}}</td>{% endif %}
             </tr>
             {% if type=="Customer" %}
             <tr>
