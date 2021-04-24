@@ -79,12 +79,17 @@ def get_details(userid, type):
     db_sess = db_session.create_session()
     if type == "Customer":
         a = db_sess.query(User).filter(User.custID == userid)[0]
-        a = list(a)
+        d = (str(a.custID), a.name, a.email, a.phone, a.address, a.city, a.country)
+        a = []
+        a.append(d)
         b = []
     elif type == "Seller":
         a = db_sess.query(Seller).filter(Seller.sellID == userid)[0]
-        b = db_sess.query(Product).filter(Product.sellID == userid).distinct(Product.category)
-        b = [i.category for i in b]
+        d = (str(a.sellID), a.name, a.email, a.phone, a.address, a.city, a.country)
+        a = []
+        a.append(d)
+        b = db_sess.query(Product.category).filter(Product.sellID == userid).distinct()
+        b = [i for i in b]
     return a, b
 
 
@@ -92,11 +97,15 @@ def search_users(search, srch_type):
     db_sess = db_session.create_session()
     search = "%"+search+"%"
     if srch_type == "Customer":
-        res = db_sess.query(User).filter(User.name.like(search))[0]
-        res = (res.custID, res.name, res.email, res.phone, res.address, res.city, res.country)
+        res = db_sess.query(User).filter(User.name.like(search))
+        if res.count() != 0:
+            res = db_sess.query(User).filter(User.name.like(search))[0]
+            res = (res.custID, res.name, res.email, res.phone, res.address, res.city, res.country)
     elif srch_type == "Seller":
-        res = db_sess.query(Seller).filter(Seller.name.like(search))[0]
-        res = (res.sellID, res.name, res.email, res.phone, res.address, res.city, res.country)
+        res = db_sess.query(Seller).filter(Seller.name.like(search))
+        if res.count() != 0:
+            res = db_sess.query(Seller).filter(Seller.name.like(search))[0]
+            res = (res.sellID, res.name, res.email, res.phone, res.address, res.city, res.country)
     res = [i for i in res]
     return res
 
@@ -484,23 +493,29 @@ def view_profile(id):
         return redirect(url_for('home'))
     userid = session["userid"]
     type = session["type"]
-    my = True if userid == id else False
+    print(userid, id)
+    if userid == id and type:
+        my = True
+    else:
+        my = False
+    print(my)
     if not my:
         profile_type = "Customer" if type == "Seller" else "Seller"
     else:
         profile_type = type
+        print(profile_type)
     det, categories = get_details(id, profile_type)
     if len(det) == 0:
         abort(404)
-    det = det.sellID
+    det = det[0]
     return render_template("view_profile.html",
                             type=profile_type,
-                            name=det.name,
-                            email=det.email,
-                            phone=det.phone,
-                            address=det.address,
-                            city=det.city,
-                            country=det.country,
+                            name=det[1],
+                            email=det[2],
+                            phone=det[3],
+                            address=det[4],
+                            city=det[5],
+                            country=det[6],
                             category=(None if profile_type == "Customer" else categories),
                             my=my)
 
@@ -549,17 +564,17 @@ def edit_profile():
         type = session["type"]
         det, _ = get_details(userid, type)
         if type == 'Customer':
-            det = det.custID
+            det = det[0]
         elif type == 'Seller':
-            det = det.sellID
+            det = det[0]
         return render_template("edit_profile.html",
                                 type=type,
-                                name=det.name,
-                                email=det.email,
-                                phone=det.phone,
-                                address=det.address,
-                                city=det.city,
-                                country=det.country)
+                                name=det[1],
+                                email=det[2],
+                                phone=det[3],
+                                address=det[4],
+                                city=det[5],
+                                country=det[6])
 
 
 @app.route("/changepassword/", methods=["POST", "GET"])

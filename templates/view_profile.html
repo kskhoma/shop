@@ -9,7 +9,7 @@
         <h1>Интернет-магазин</h1>
     </div>
   <div class="nav">
-    <p><a href="/">Домашняя страница</a> > <a href="/viewprofile/">Смотреть профили</a> > <a href="">Профидь пользователя</a></p>
+    <p><a href="/">Домашняя страница</a> > <a href="/viewprofile/">Смотреть профили</a> > <a href="">Профиль пользователя</a></p>
   </div>
   <h2>ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ</h2>
   {{type}} аккаунт
@@ -36,10 +36,10 @@
     </tr>
   </table>
   {% if my %}
-  <p class="press"><a href="/editprofile/">Редактировать профиль</a></p>
+    <p class="press"><a href="/editprofile/">Редактировать профиль</a></p>
   {% endif %}
   {% if not my and type!="Customer" %}
-  <p class="press"><a href="./sellerproducts">Смотреть продукты этого продавца</a></p>
+    <p class="press"><a href="./sellerproducts">Смотреть продукты этого продавца</a></p>
   {% endif %}
 </body>
 </html>
