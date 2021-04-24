@@ -493,17 +493,14 @@ def view_profile(id):
         return redirect(url_for('home'))
     userid = session["userid"]
     type = session["type"]
-    print(userid, id)
     if userid == id and type:
         my = True
     else:
         my = False
-    print(my)
     if not my:
         profile_type = "Customer" if type == "Seller" else "Seller"
     else:
         profile_type = type
-        print(profile_type)
     det, categories = get_details(id, profile_type)
     if len(det) == 0:
         abort(404)
