@@ -228,7 +228,7 @@ def update_product(data, id):
     product.quantity = data['qty']
     product.category = data['category']
     product.cost_price = data['price']
-    product.sell_price = 1.1 * data['price']
+    product.sell_price = round(1.1 * float(data['price']))
     product.description = data['desp']
     db_sess.commit()
 
@@ -395,9 +395,9 @@ def get_cart(custID):
         fr = db_sess.query(Cart).group_by(Cart.custID, Cart.prodID)[0]
         sum_qty = fr.quantity
         fr = (fr.custID, fr.prodID, sum_qty)
-        p = db_sess.query(Product).filter(Product.prodID == Cart.prodID)
-        c = db_sess.query(Cart).filter(Cart.custID == custID)
-        a = (p.prodID, p.name, p.sell_price, c.sum_qty, p.quantity)
+        p = db_sess.query(Product).filter(Product.prodID == Cart.prodID)[0]
+        c = db_sess.query(Cart).filter(Cart.custID == custID)[0]
+        a = (p.prodID, p.name, p.sell_price, c.quantity, p.quantity)
     # a = cur.execute("""SELECT p.prodID, p.name, p.sell_price, c.sum_qty, p.quantity
                        # FROM (SELECT custID, prodID, SUM(quantity) AS sum_qty FROM cart
                        # GROUP BY custID, prodID) c JOIN product p
