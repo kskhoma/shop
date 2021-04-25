@@ -166,7 +166,7 @@ def add_product(sellID, data):
     prod.quantity = tup[1]
     prod.category = tup[2]
     prod.cost_price = tup[3]
-    prod.sell_price = int(tup[3]) * 1.1
+    prod.sell_price = round(float(tup[3]) * 1.1)
     prod.description = tup[4]
     prod.sellID = tup[5]
     db_sess.add(prod)
@@ -393,7 +393,7 @@ def get_cart(custID):
     fr = db_sess.query(Cart).group_by(Cart.custID, Cart.prodID)
     if fr.count() != 0:
         fr = db_sess.query(Cart).group_by(Cart.custID, Cart.prodID)[0]
-        sum_qty = sum(fr.quantity)
+        sum_qty = fr.quantity
         fr = (fr.custID, fr.prodID, sum_qty)
         p = db_sess.query(Product).filter(Product.prodID == Cart.prodID)
         c = db_sess.query(Cart).filter(Cart.custID == custID)
