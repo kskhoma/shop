@@ -6,7 +6,7 @@ import datetime
 class Order(SqlAlchemyBase):
     __tablename__ = 'orders'
 
-    orderID = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    orderID = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     custID = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.custID"))
     prodID = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("product.prodID"))
     quantity = sqlalchemy.Column(sqlalchemy.Integer)

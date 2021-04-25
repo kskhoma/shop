@@ -10,6 +10,7 @@ from data.sellers import Seller
 from data.cart import Cart
 from data.orders import Order
 import datetime
+from sqlalchemy import func
 
 db_session.global_init("db/shop.db")
 app = Flask(__name__)
@@ -390,19 +391,15 @@ def add_product_to_cart(prodID, custID):
 
 def get_cart(custID):
     db_sess = db_session.create_session()
-    fr = db_sess.query(Cart).group_by(Cart.custID, Cart.prodID)
-    if fr.count() != 0:
-        fr = db_sess.query(Cart).group_by(Cart.custID, Cart.prodID)[0]
-        sum_qty = fr.quantity
-        fr = (fr.custID, fr.prodID, sum_qty)
-        p = db_sess.query(Product).filter(Product.prodID == Cart.prodID)[0]
-        c = db_sess.query(Cart).filter(Cart.custID == custID)[0]
-        a = (p.prodID, p.name, p.sell_price, c.quantity, p.quantity)
-    # a = cur.execute("""SELECT p.prodID, p.name, p.sell_price, c.sum_qty, p.quantity
-                       # FROM (SELECT custID, prodID, SUM(quantity) AS sum_qty FROM cart
-                       # GROUP BY custID, prodID) c JOIN product p
-                       # WHERE p.prodID=c.prodID AND c.custID=?""", (custID,))
-        res = [i for i in a]
+    s = db_sess.query(Cart.prodID, func.sum(Cart.quantity)).group_by(Cart.prodID).filter(Cart.custID == custID).all()
+    b = []
+    if len(s) != 0:
+        for i in s:
+            j, f = i
+            a = db_sess.query(Product).filter(Product.prodID == j)[0]
+            a = (a.prodID, a.name, a.sell_price, f, a.quantity)
+            b.append(a)
+        res = [i for i in b]
         return res
     else:
         res = ''
@@ -440,7 +437,8 @@ def cart_purchase(custID):
         purchase.sell_price = prod[4]
         purchase.status = 'PLACED'
         db_sess.add(purchase)
-        p = db_sess.query(Cart).filter(Cart.custID == custID, Cart.prodID == prodID).first()
+        p = db_sess.query(Cart).filter(Cart.custID == custID, Cart.prodID == prodID)[0]
+
         db_sess.delete(p)
         db_sess.commit()
 
