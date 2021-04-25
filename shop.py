@@ -199,15 +199,6 @@ def my_product_search(sellID, srchBy, category, keyword):
                                                (Product.category.like(word))), Product.sellID == sellID)[0]
             a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
             res.append(list(a))
-    elif srchBy == "оба":
-        res = []
-        for word in keyword:
-            a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word))),
-                                              Product.sellID == sellID, Product.category == category)[0]
-            a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
-            res.append(list(a))
-        if len(res) == 0:
-            res = ''
     return res
 
 
@@ -236,31 +227,38 @@ def update_product(data, id):
 
 def search_products(srchBy, category, keyword):
     db_sess = db_session.create_session()
-    keyword = ['%'+i+'%' for i in keyword.split()]
-    if len(keyword) == 0:
-        keyword.append('%%')
     if srchBy == "по категории":
         a = db_sess.query(Product).filter(Product.category == category, Product.quantity != 0)
         if a.count() != 0:
-            a = db_sess.query(Product).filter(Product.category == category, Product.quantity != 0)[0]
-            a = (str(a.prodID), a.name, a.category, str(a.sell_price))
-            res = [i for i in a]
-            res = [res]
+            res = []
+            b = db_sess.query(Product.prodID).filter(Product.category == category, Product.quantity != 0).all()
+            print(b)
+            for i in b:
+                for j in i:
+                    a = db_sess.query(Product).filter(Product.prodID == j)[0]
+                    a = (str(j), a.name, a.category, str(a.sell_price))
+                    w = [i for i in a]
+                    print(w)
+                    res.append(w)
+                    print(res)
         else:
             res = ''
     elif srchBy == "по названию":
         res = []
-        for word in keyword:
-            a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word)) | (Product.category.like(word))), Product.quantity != 0)[0]
-            a = (a.prodID, a.name, a.category, a.sell_price)
-            res.append(list(a))
-    elif srchBy == "оба":
-        res = []
-        for word in keyword:
-            a = db_sess.query(Product).filter(((Product.name == word) | (Product.description == word)),
-                                              Product.quantity != 0, Product.category == category)[0]
-            a = (a.prodID, a.name, a.category, a.sell_price)
-            res.append(list(a))
+        a = db_sess.query(Product).filter(((Product.name.like(keyword)) | (Product.description.like(keyword)) | (Product.category.like(keyword))), Product.quantity != 0)
+        if a.count() != 0:
+            res = []
+            b = db_sess.query(Product.prodID).filter(((Product.name.like(keyword)) | (Product.description.like(keyword)) | (Product.category.like(keyword))), Product.quantity != 0).all()
+            for i in b:
+                for j in i:
+                    a = db_sess.query(Product).filter(Product.prodID == j)[0]
+                    a = (str(j), a.name, a.category, str(a.sell_price))
+                    w = [i for i in a]
+                    print(w)
+                    res.append(w)
+                    print(res)
+        else:
+            res = ''
     return res
 
 
@@ -438,7 +436,6 @@ def cart_purchase(custID):
         purchase.status = 'PLACED'
         db_sess.add(purchase)
         p = db_sess.query(Cart).filter(Cart.custID == custID, Cart.prodID == prodID)[0]
-
         db_sess.delete(p)
         db_sess.commit()
 

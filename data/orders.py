@@ -11,6 +11,6 @@ class Order(SqlAlchemyBase):
     prodID = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("product.prodID"))
     quantity = sqlalchemy.Column(sqlalchemy.Integer)
     date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
-    cost_price = sqlalchemy.Column(sqlalchemy.DECIMAL)
-    sell_price = sqlalchemy.Column(sqlalchemy.DECIMAL)
+    cost_price = sqlalchemy.Column(sqlalchemy.Float)
+    sell_price = sqlalchemy.Column(sqlalchemy.Float)
     status = sqlalchemy.Column(sqlalchemy.Integer)
