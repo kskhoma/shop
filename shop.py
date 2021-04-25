@@ -113,13 +113,13 @@ def search_users(search, srch_type):
 def update_details(data, userid, type):
     db_sess = db_session.create_session()
     if type == "Customer":
-        user = db_sess.query(User).filter(User.custID == userid)
+        user = db_sess.query(User).filter(User.custID == userid)[0]
         user.phone = data["phone"]
         user.address = data["address"]
         user.city = data["city"]
         user.country = data["country"]
     elif type == "Seller":
-        seller = db_sess.query(Seller).filter(Seller.sellID == userid)
+        seller = db_sess.query(Seller).filter(Seller.sellID == userid)[0]
         seller.phone = data["phone"]
         seller.address = data["address"]
         seller.city = data["city"]
@@ -223,7 +223,6 @@ def product_info(id):
 
 def update_product(data, id):
     db_sess = db_session.create_session()
-    a = db_sess.query(Metad)
     product = db_sess.query(Product).filter(Product.prodID == id)[0]
     product.name = data['name']
     product.quantity = data['qty']
@@ -284,6 +283,7 @@ def place_order(prodID, custID, qty):
     ord.cost_price = a[4]
     ord.sell_price = a[5]
     ord.status = a[6]
+    db_sess.add(ord)
     db_sess.commit()
 
 
@@ -384,6 +384,7 @@ def add_product_to_cart(prodID, custID):
     inse.custID = custID
     inse.prodID = prodID
     inse.quantity = 1
+    db_sess.add(inse)
     db_sess.commit()
 
 
@@ -404,7 +405,7 @@ def get_cart(custID):
         res = [i for i in a]
         return res
     else:
-        res =''
+        res = ''
         return res
 
 
@@ -424,7 +425,6 @@ def update_cart(custID, qty):
 def cart_purchase(custID):
     db_sess = db_session.create_session()
     cart = get_cart(custID)
-    print(cart)
     for item in cart:
         prodID = item[0]
         qty = item[3]
@@ -572,10 +572,7 @@ def edit_profile():
         userid = session["userid"]
         type = session["type"]
         det, _ = get_details(userid, type)
-        if type == 'Customer':
-            det = det[0]
-        elif type == 'Seller':
-            det = det[0]
+        det = det[0]
         return render_template("edit_profile.html",
                                 type=type,
                                 name=det[1],
@@ -620,6 +617,7 @@ def my_products():
         category = None if srchBy == 'по названию' else data["category"]
         keyword = data["keyword"]
         results = my_product_search(session['userid'], srchBy, category, keyword)
+        results = [results]
         return render_template('my_products.html', categories=categories, after_srch=True, results=results)
     return render_template("my_products.html", categories=categories, after_srch=False)
 
