@@ -505,7 +505,7 @@ def view_profile(id):
         return redirect(url_for('home'))
     userid = session["userid"]
     type = session["type"]
-    if userid == id and type:
+    if str(userid) == id:
         my = True
     else:
         my = False

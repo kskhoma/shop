@@ -11,7 +11,7 @@ function isNumeric(str){
 
 function isAlpha(str){
    str = str.toLowerCase();
-   var allowedChars = "-: abcdefghijklmnopqrstuvwxyz";
+   var allowedChars = "-: абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
    var isal=true;
    var char;
    for (i = 0; i  < str.length && isal == true; i++){
