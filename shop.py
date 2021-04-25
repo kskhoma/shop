@@ -90,7 +90,8 @@ def get_details(userid, type):
         a = []
         a.append(d)
         b = db_sess.query(Product.category).filter(Product.sellID == userid).distinct()
-        b = [i for i in b]
+        b = [[i[0]] for i in b]
+        b = sum(b, [])
     return a, b
 
 
@@ -183,22 +184,36 @@ def get_categories(sellID):
 
 def my_product_search(sellID, srchBy, category, keyword):
     db_sess = db_session.create_session()
-    keyword = ['%'+i+'%' for i in keyword.split()]
-    if len(keyword) == 0:
-        keyword.append('%%')
-    if category == '':
-        res = ''
-    elif srchBy == "по категории":
-        a = db_sess.query(Product).filter(Product.sellID == sellID, Product.category == category)[0]
-        a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
-        res = [i for i in a]
+    if srchBy == "по категории":
+        a = db_sess.query(Product).filter(Product.category == category, Product.sellID == sellID)
+        if a.count() != 0:
+            res = []
+            b = db_sess.query(Product.prodID).filter(Product.category == category, Product.sellID == sellID).all()
+            for i in b:
+                for j in i:
+                    a = db_sess.query(Product).filter(Product.prodID == j)[0]
+                    a = (str(j), a.name, a.category, str(a.sell_price))
+                    res.append(a)
+        else:
+            res = ''
     elif srchBy == "по названию":
-        res = []
-        for word in keyword:
-            a = db_sess.query(Product).filter(((Product.name.like(word)) | (Product.description.like(word)) |
-                                               (Product.category.like(word))), Product.sellID == sellID)[0]
-            a = (a.prodID, a.name, a.quantity, a.category, a.cost_price)
-            res.append(list(a))
+        a = db_sess.query(Product).filter(
+            ((Product.name.like(keyword)) | (Product.description.like(keyword)) | (Product.category.like(keyword))),
+            Product.sellID == sellID)
+        if a.count() != 0:
+            res = []
+            b = db_sess.query(Product.prodID).filter(
+                ((Product.name.like(keyword)) | (Product.description.like(keyword)) | (Product.category.like(keyword))),
+                Product.sellID == sellID).all()
+            for i in b:
+                for j in i:
+                    a = db_sess.query(Product).filter(Product.prodID == j)[0]
+                    a = (str(j), a.name, a.category, str(a.sell_price))
+                    w = [i for i in a]
+                    res.append(w)
+        else:
+            res = ''
+    print(res)
     return res
 
 
@@ -232,19 +247,15 @@ def search_products(srchBy, category, keyword):
         if a.count() != 0:
             res = []
             b = db_sess.query(Product.prodID).filter(Product.category == category, Product.quantity != 0).all()
-            print(b)
             for i in b:
                 for j in i:
                     a = db_sess.query(Product).filter(Product.prodID == j)[0]
                     a = (str(j), a.name, a.category, str(a.sell_price))
                     w = [i for i in a]
-                    print(w)
                     res.append(w)
-                    print(res)
         else:
             res = ''
     elif srchBy == "по названию":
-        res = []
         a = db_sess.query(Product).filter(((Product.name.like(keyword)) | (Product.description.like(keyword)) | (Product.category.like(keyword))), Product.quantity != 0)
         if a.count() != 0:
             res = []
@@ -254,9 +265,7 @@ def search_products(srchBy, category, keyword):
                     a = db_sess.query(Product).filter(Product.prodID == j)[0]
                     a = (str(j), a.name, a.category, str(a.sell_price))
                     w = [i for i in a]
-                    print(w)
                     res.append(w)
-                    print(res)
         else:
             res = ''
     return res
@@ -531,7 +540,12 @@ def profile():
     type = "Seller" if session['type'] == "Customer" else "Customer"
     if request.method == "POST":
         search = request.form['search']
-        results = search_users(search, type)
+        results = []
+        res = search_users(search, type)
+        if len(res) != 0:
+            results.append(res)
+        else:
+            results = ''
         found = len(results)
         return render_template('profiles.html', id=session['userid'], type=type, after_srch=True, found=found, results=results)
 
@@ -612,7 +626,6 @@ def my_products():
         category = None if srchBy == 'по названию' else data["category"]
         keyword = data["keyword"]
         results = my_product_search(session['userid'], srchBy, category, keyword)
-        results = [results]
         return render_template('my_products.html', categories=categories, after_srch=True, results=results)
     return render_template("my_products.html", categories=categories, after_srch=False)
 
