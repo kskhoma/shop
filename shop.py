@@ -218,7 +218,7 @@ def product_info(id):
     res = [i for i in a]
     if len(res) == 0:
         return False, res
-    return True, res[0]
+    return True, res
 
 
 def update_product(data, id):
@@ -237,11 +237,17 @@ def update_product(data, id):
 def search_products(srchBy, category, keyword):
     db_sess = db_session.create_session()
     keyword = ['%'+i+'%' for i in keyword.split()]
-    if len(keyword) == 0: keyword.append('%%')
+    if len(keyword) == 0:
+        keyword.append('%%')
     if srchBy == "по категории":
-        a = db_sess.query(Product).filter(Product.category == category, Product.quantity != 0)[0]
-        a = (a.prodID, a.name, a.category, a.sell_price)
-        res = [i for i in a]
+        a = db_sess.query(Product).filter(Product.category == category, Product.quantity != 0)
+        if a.count() != 0:
+            a = db_sess.query(Product).filter(Product.category == category, Product.quantity != 0)[0]
+            a = (str(a.prodID), a.name, a.category, str(a.sell_price))
+            res = [i for i in a]
+            res = [res]
+        else:
+            res = ''
     elif srchBy == "по названию":
         res = []
         for word in keyword:
@@ -269,7 +275,7 @@ def get_seller_products(sellID):
 def place_order(prodID, custID, qty):
     db_sess = db_session.create_session()
     ord = Order()
-    a = db_sess.query(Product).filter(Product.prodID == prodID)
+    a = db_sess.query(Product).filter(Product.prodID == prodID)[0]
     a = (custID, prodID, qty, datetime.datetime.now(), a.cost_price * qty, a.sell_price * qty, 'PLACED')
     ord.custID = a[0]
     ord.prodID = a[1]
@@ -384,17 +390,22 @@ def add_product_to_cart(prodID, custID):
 def get_cart(custID):
     db_sess = db_session.create_session()
     fr = db_sess.query(Cart).group_by(Cart.custID, Cart.prodID)
-    sum_qty = sum(fr.quantity)
-    fr = (fr.custID, fr.prodID, sum_qty)
-    p = db_sess.query(Product).filter(Product.prodID == User.prodID)
-    c = db_sess.query(User).filter(User.custID == custID)
-    a = (p.prodID, p.name, p.sell_price, c.sum_qty, p.quantity)
+    if fr.count() != 0:
+        fr = db_sess.query(Cart).group_by(Cart.custID, Cart.prodID)[0]
+        sum_qty = sum(fr.quantity)
+        fr = (fr.custID, fr.prodID, sum_qty)
+        p = db_sess.query(Product).filter(Product.prodID == Cart.prodID)
+        c = db_sess.query(Cart).filter(Cart.custID == custID)
+        a = (p.prodID, p.name, p.sell_price, c.sum_qty, p.quantity)
     # a = cur.execute("""SELECT p.prodID, p.name, p.sell_price, c.sum_qty, p.quantity
                        # FROM (SELECT custID, prodID, SUM(quantity) AS sum_qty FROM cart
                        # GROUP BY custID, prodID) c JOIN product p
                        # WHERE p.prodID=c.prodID AND c.custID=?""", (custID,))
-    res = [i for i in a]
-    return res
+        res = [i for i in a]
+        return res
+    else:
+        res =''
+        return res
 
 
 def update_cart(custID, qty):
@@ -413,6 +424,7 @@ def update_cart(custID, qty):
 def cart_purchase(custID):
     db_sess = db_session.create_session()
     cart = get_cart(custID)
+    print(cart)
     for item in cart:
         prodID = item[0]
         qty = item[3]
@@ -719,10 +731,10 @@ def buy_confirm(id):
     qty = request.args['quantity']
     if request.method == "POST":
         choice = request.form['choice']
-        if choice == "PLACE ORDER":
+        if choice == "ПОДТВЕРДИТЬ ЗАКАЗ":
             place_order(id, session['userid'], qty)
             return redirect(url_for('my_orders'))
-        elif choice == "CANCEL":
+        elif choice == "ОТМЕНА":
             return redirect(url_for('buy_product', id=id))
     items = ((name, qty, total),)
     return render_template('buy_confirm.html', items=items, total=total)
@@ -840,7 +852,7 @@ def my_cart():
         qty = {}
         for i in data:
             if i.startswith("qty"):
-                qty[i[3:]]=data[i]      #qty[prodID]=quantity
+                qty[i[3:]] = data[i]
         update_cart(session['userid'], qty)
         return redirect("/buy/cart/confirm/")
     return render_template('my_cart.html', cart=cart)
@@ -854,10 +866,10 @@ def cart_purchase_confirm():
         abort(403)
     if request.method == "POST":
         choice = request.form['choice']
-        if choice == "PLACE ORDER":
+        if choice == "ПОДТВЕРДИТЬ ЗАКАЗ":
             cart_purchase(session['userid'])
             return redirect(url_for('my_orders'))
-        elif choice == "CANCEL":
+        elif choice == "ОТМЕНА":
             return redirect(url_for('my_cart'))
     cart = get_cart(session['userid'])
     items = [(i[1], i[3], float(i[2])*float(i[3])) for i in cart]
