@@ -66,11 +66,19 @@ def authorization(data):
     email = data["email"]
     password = data["password"]
     if type == "Customer":
-        a = db_sess.query(User).filter(User.email == email, User.password == password)[0]
-        a = [a.custID, a.name]
+        a = db_sess.query(User).filter(User.email == email, User.password == password)
+        if a.count() != 0:
+            a = db_sess.query(User).filter(User.email == email, User.password == password)[0]
+            a = [a.custID, a.name]
+        else:
+            a = []
     elif type == "Seller":
-        a = db_sess.query(Seller).filter(Seller.email == email, Seller.password == password)[0]
-        a = [a.sellID, a.name]
+        a = db_sess.query(Seller).filter(Seller.email == email, Seller.password == password)
+        if a.count() != 0:
+            a = db_sess.query(Seller).filter(Seller.email == email, Seller.password == password)[0]
+            a = [a.sellID, a.name]
+        else:
+            a = []
     if len(a) == 0:
         return False
     return a
