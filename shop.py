@@ -306,14 +306,15 @@ def place_order(prodID, custID, qty):
 def customer_orders(custID):
     db_sess = db_session.create_session()
     o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                    Order.status == 'RECIEVED').order_by(Order.date.desc())
+                                    Order.status != 'RECIEVED').order_by(Order.date.desc())
     p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
     if o.count() != 0 and p.count() != 0:
         o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
+                                        Order.status != 'RECIEVED').order_by(Order.date.desc())[0]
         p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
         a = (o.orderID, o.prodID, p.name, o.quantity, o.sell_price, o.date, o.status)
         res = [i for i in a]
+        print(res)
         return res
     else:
         res = ''
@@ -443,7 +444,6 @@ def cart_purchase(custID):
         prod = db_sess.query(Product).filter(Product.prodID == prodID).first()
         prod = (custID, prodID, qty, prod.cost_price * qty, prod.sell_price * qty)
         purchase = Order()
-        purchase.orderID = prod[0]
         purchase.custID = prod[0]
         purchase.prodID = prod[1]
         purchase.quantity = prod[2]
