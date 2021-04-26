@@ -17,13 +17,13 @@
   {% else %}
   <table>
     <tr>
-      <th>№</th><th>ПРОДУКТ</th><th>КОЛИЧЕСТВО</th><th>ВСЕГО</th><th>ВРЕМЯ</th><th>ПРОДАНО</th>
+      <th>№</th><th>ПРОДУКТ</th><th>КОЛИЧЕСТВО</th><th>ВСЕГО</th><th>ВРЕМЯ</th>
     </tr>
     {% set cnt={'val':1} %}
     {% for i in sales %}
     <tr>
       <td>{{cnt['val']}}</td><td><a href="/viewproduct/{{i[0]}}">{{i[1]}}</a></td><td>{{i[2]}}</td>
-      <td>{{i[3]}}</td><td>{{i[4]}}</td><td><a href="/viewprofile/{{i[5]}}">{{i[6]}}</a></td>
+      <td>{{i[3]}}</td><td>{{i[4]}}</td>
     </tr>
     {%if cnt.update({'val':(cnt['val']+1)}) %}{% endif %}
     {% endfor %}

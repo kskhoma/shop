@@ -371,17 +371,14 @@ def customer_purchases(custID):
 
 
 def seller_sales(sellID):
+    res = []
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == User.custID,
-                                    Order.status == 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID, Product.sellID == sellID)
-    if o.count() != 0 and p.count() != 0:
-        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == User.custID,
-                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
-        p = db_sess.query(Product).filter(Product.prodID == Order.prodID, Product.sellID == sellID)[0]
-        c = db_sess.query(User).filter(User.custID == Order.custID)[0]
-        a = (o.prodID, p.name, o.quantity, o.sell_price, o.date, o.custID, c.name)
-        res = [i for i in a]
+    o = db_sess.query(Order.prodID, Product.name, Order.quantity, Order.sell_price, Order.date,
+                      Order.custID).filter(Order.prodID == Product.prodID, Order.custID == User.custID,
+                                    Order.status == 'RECIEVED').order_by(Order.date.desc()).all()
+    if len(o) != 0:
+        for i in o:
+            res.append(i)
         return res
     else:
         res = ''
@@ -452,8 +449,7 @@ def cart_purchase(custID):
 
 def empty_cart(custID):
     db_sess = db_session.create_session()
-    emp = db_sess.query(Cart).filter(Cart.custID == custID).first()
-    db_sess.delete(emp)
+    emp = db_sess.query(Cart).filter(Cart.custID == custID).delete()
     db_sess.commit()
 
 
