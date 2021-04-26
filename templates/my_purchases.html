@@ -23,7 +23,7 @@
     {% for i in purchases %}
     <tr>
       <td>{{cnt['val']}}</td><td><a href="/viewproduct/{{i[0]}}">{{i[1]}}</a></td><td>{{i[2]}}</td>
-      <td>₹ {{i[3]}}</td><td>{{i[4]}}</td>
+      <td>{{i[3]}}</td><td>{{i[4]}}</td>
     </tr>
     {%if cnt.update({'val':(cnt['val']+1)}) %}{% endif %}
     {% endfor %}

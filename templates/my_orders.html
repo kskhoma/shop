@@ -23,11 +23,11 @@
     {% for i in orders %}
     <tr>
       <td>{{cnt['val']}}</td><td><a href="/viewproduct/{{i[1]}}">{{i[2]}}</a></td><td>{{i[3]}}</td>
-      <td>₹ {{i[4]}}</td><td>{{i[5]}}</td><td>{{i[6]}}</td>
+      <td>{{i[4]}}</td><td>{{i[5]}}</td><td>{{i[6]}}</td>
       {% if i[6]=="PLACED" %}
       <td><p class="press"><a href="/cancel/{{i[0]}}">Отменить заказ</a></p></td>
       {% elif i[6]=="DISPACHED" %}
-      <td><p class="press"><a href="/recieve/{{i[0]}}">Заказ отправлен</a></p></td>
+      <td><p class="press"><a href="/recieve/{{i[0]}}">Подтвердить получение</a></p></td>
       {% else %}
       <td></td>
       {% endif %}

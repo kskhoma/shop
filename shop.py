@@ -200,7 +200,7 @@ def my_product_search(sellID, srchBy, category, keyword):
             for i in b:
                 for j in i:
                     a = db_sess.query(Product).filter(Product.prodID == j)[0]
-                    a = (str(j), a.name, a.category, str(a.sell_price))
+                    a = (str(j), a.name, str(a.quantity), a.category, str(a.cost_price))
                     res.append(a)
         else:
             res = ''
@@ -216,12 +216,11 @@ def my_product_search(sellID, srchBy, category, keyword):
             for i in b:
                 for j in i:
                     a = db_sess.query(Product).filter(Product.prodID == j)[0]
-                    a = (str(j), a.name, a.category, str(a.sell_price))
+                    a = (str(j), a.name, str(a.quantity), a.category, str(a.cost_price))
                     w = [i for i in a]
                     res.append(w)
         else:
             res = ''
-    print(res)
     return res
 
 
@@ -304,17 +303,14 @@ def place_order(prodID, custID, qty):
 
 
 def customer_orders(custID):
+    res = []
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                    Order.status != 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
-    if o.count() != 0 and p.count() != 0:
-        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                        Order.status != 'RECIEVED').order_by(Order.date.desc())[0]
-        p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
-        a = (o.orderID, o.prodID, p.name, o.quantity, o.sell_price, o.date, o.status)
-        res = [i for i in a]
-        print(res)
+    o = db_sess.query(Order.orderID, Order.prodID, Product.name, Order.quantity, Order.sell_price, Order.date,
+                      Order.status).filter(Order.prodID == Product.prodID, Order.custID == custID,
+                                           Order.status != 'RECIEVED').order_by(Order.date.desc()).all()
+    if len(o) != 0:
+        for i in o:
+            res.append(i)
         return res
     else:
         res = ''
@@ -322,16 +318,14 @@ def customer_orders(custID):
 
 
 def seller_orders(sellID):
+    res = []
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Product.sellID == sellID,
-                                    Order.status == 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
-    if o.count() != 0 and p.count() != 0:
-        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Product.sellID == sellID,
-                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
-        p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
-        a = (o.orderID, o.prodID, p.name, o.quantity, p.quantity, o.cost_price, o.date, o.status)
-        res = [i for i in a]
+    o = db_sess.query(Order.orderID, Order.prodID, Product.name, Order.quantity, Product.quantity, Order.cost_price,
+                      Order.date, Order.status).filter(Order.prodID == Product.prodID, Product.sellID == sellID,
+                                                       Order.status != 'RECIEVED').order_by(Order.date.desc()).all()
+    if len(o) != 0:
+        for i in o:
+            res.append(i)
         return res
     else:
         res = ''
@@ -340,8 +334,8 @@ def seller_orders(sellID):
 
 def get_order_details(orderID):
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.orderID == orderID, Order.prodID == Product.prodID)
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
+    o = db_sess.query(Order).filter(Order.orderID == orderID, Order.prodID == Product.prodID)[0]
+    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
     a = (o.custID, p.sellID, o.status)
     res = [i for i in a]
     return res
@@ -349,14 +343,15 @@ def get_order_details(orderID):
 
 def change_order_status(orderID, new_status):
     db_sess = db_session.create_session()
-    a = db_sess.query(Order).filter(Order.orderID == orderID)
+    a = db_sess.query(Order).filter(Order.orderID == orderID)[0]
     a.status = new_status
     if new_status == 'DISPACHED':
         c = db_sess.query(Order).filter(Order.orderID == orderID)[0]
+        d = c.quantity
         c = c.prodID
         b = db_sess.query(Product).filter(Product.prodID == c)[0]
-        d = c.quantity
-        b.quantity = int(Product.quantity) - int(d)
+        k = db_sess.query(Product)[0]
+        b.quantity = int(str(k.quantity)) - int(str(d))
     db_sess.commit()
 
 
@@ -771,9 +766,9 @@ def cancel_order(orderID):
     res = get_order_details(orderID)
     if len(res) == 0:
         abort(404)
-    custID = res[0][0]
-    sellID = res[0][1]
-    status = res[0][2]
+    custID = res[0]
+    sellID = res[1]
+    status = res[2]
     if session['type'] == "Seller" and sellID != session['userid']:
         abort(403)
     if session['type'] == "Customer" and custID != session['userid']:
@@ -793,9 +788,9 @@ def dispatch_order(orderID):
     res = get_order_details(orderID)
     if len(res) == 0:
         abort(404)
-    custID = res[0][0]
-    sellID = res[0][1]
-    status = res[0][2]
+    custID = res[0]
+    sellID = res[1]
+    status = res[2]
     if session['userid'] != sellID:
         abort(403)
     if status != "PLACED":
@@ -813,9 +808,9 @@ def recieve_order(orderID):
     res = get_order_details(orderID)
     if len(res) == 0:
         abort(404)
-    custID = res[0][0]
-    sellID = res[0][1]
-    status = res[0][2]
+    custID = res[0]
+    sellID = res[1]
+    status = res[2]
     if session['userid'] != custID:
         abort(403)
     if status != "DISPACHED":
@@ -831,6 +826,7 @@ def my_purchases():
     if session['type'] == "Seller":
         abort(403)
     res = customer_purchases(session['userid'])
+    res = [tuple(res)]
     return render_template('my_purchases.html', purchases=res)
 
 
