@@ -200,7 +200,7 @@ def my_product_search(sellID, srchBy, category, keyword):
             for i in b:
                 for j in i:
                     a = db_sess.query(Product).filter(Product.prodID == j)[0]
-                    a = (str(j), a.quantity, a.name, a.category, str(a.cost_price))
+                    a = (str(j), a.name, str(a.quantity), a.category, str(a.cost_price))
                     res.append(a)
         else:
             res = ''
@@ -216,7 +216,7 @@ def my_product_search(sellID, srchBy, category, keyword):
             for i in b:
                 for j in i:
                     a = db_sess.query(Product).filter(Product.prodID == j)[0]
-                    a = (str(j), a.name, a.quantity, a.category, str(a.cost_price))
+                    a = (str(j), a.name, str(a.quantity), a.category, str(a.cost_price))
                     w = [i for i in a]
                     res.append(w)
         else:
