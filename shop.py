@@ -826,7 +826,6 @@ def my_purchases():
     if session['type'] == "Seller":
         abort(403)
     res = customer_purchases(session['userid'])
-    res = [tuple(res)]
     return render_template('my_purchases.html', purchases=res)
 
 
