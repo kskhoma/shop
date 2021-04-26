@@ -2,3 +2,4 @@ flask
 sqlalchemy
 flask_session
 flask_login
+flask_wtf
