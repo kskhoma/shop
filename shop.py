@@ -305,9 +305,8 @@ def place_order(prodID, custID, qty):
 def customer_orders(custID):
     res = []
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                    Order.status != 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
+    o = db_sess.query(Order).filter(Order.custID == custID, Order.status != 'RECIEVED').order_by(Order.date.desc())
+    p = db_sess.query(Product)
     if o.count() != 0 and p.count() != 0:
         o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
                                         Order.status != 'RECIEVED').order_by(Order.date.desc())[0]
