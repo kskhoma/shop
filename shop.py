@@ -288,7 +288,9 @@ def place_order(prodID, custID, qty):
     db_sess = db_session.create_session()
     ord = Order()
     a = db_sess.query(Product).filter(Product.prodID == prodID)[0]
-    a = (custID, prodID, qty, datetime.datetime.now(), a.cost_price * int(qty), a.sell_price * int(qty), 'PLACED')
+    offset = datetime.timedelta(hours=3)
+    tz = datetime.timezone(offset, name='МСК')
+    a = (custID, prodID, qty, datetime.datetime.now(tz), a.cost_price * int(qty), a.sell_price * int(qty), 'PLACED')
     ord.custID = a[0]
     ord.prodID = a[1]
     ord.quantity = a[2]
@@ -426,6 +428,8 @@ def update_cart(custID, qty):
 
 
 def cart_purchase(custID):
+    offset = datetime.timedelta(hours=3)
+    tz = datetime.timezone(offset, name='МСК')
     db_sess = db_session.create_session()
     cart = get_cart(custID)
     for item in cart:
@@ -437,7 +441,7 @@ def cart_purchase(custID):
         purchase.custID = prod[0]
         purchase.prodID = prod[1]
         purchase.quantity = prod[2]
-        purchase.date = datetime.datetime.now()
+        purchase.date = datetime.datetime.now(tz)
         purchase.cost_price = prod[3]
         purchase.sell_price = prod[4]
         purchase.status = 'PLACED'
