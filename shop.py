@@ -356,20 +356,20 @@ def change_order_status(orderID, new_status):
 
 
 def customer_purchases(custID):
+    res = []
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                    Order.status == 'RECIEVED').order_by(Order.date.desc())
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
-    if o.count() != 0 and p.count() != 0:
-        o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
-                                        Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
-        p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
-        a = (o.prodID, p.name, o.quantity, o.sell_price, o.date)
-        res = [i for i in a]
+    o = db_sess.query(Order.prodID, Product.name, Order.quantity, Order.sell_price,
+                      Order.date).filter(Order.prodID == Product.prodID, Order.custID == custID,
+                                    Order.status == 'RECIEVED').order_by(Order.date.desc()).all()
+    if len(o) != 0:
+        for i in o:
+            res.append(i)
+        print(res)
         return res
     else:
         res = ''
         return res
+
 
 
 def seller_sales(sellID):
@@ -381,7 +381,7 @@ def seller_sales(sellID):
         o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == User.custID,
                                         Order.status == 'RECIEVED').order_by(Order.date.desc())[0]
         p = db_sess.query(Product).filter(Product.prodID == Order.prodID, Product.sellID == sellID)[0]
-        c = db_sess.query(User).filter(User.custID == Order.custID)
+        c = db_sess.query(User).filter(User.custID == Order.custID)[0]
         a = (o.prodID, p.name, o.quantity, o.sell_price, o.date, o.custID, c.name)
         res = [i for i in a]
         return res
@@ -826,6 +826,7 @@ def my_purchases():
     if session['type'] == "Seller":
         abort(403)
     res = customer_purchases(session['userid'])
+    res = [tuple(res)]
     return render_template('my_purchases.html', purchases=res)
 
 
