@@ -346,10 +346,11 @@ def change_order_status(orderID, new_status):
     if new_status == 'DISPACHED':
         c = db_sess.query(Order).filter(Order.orderID == orderID)[0]
         d = c.quantity
+        print(d)
         c = c.prodID
         b = db_sess.query(Product).filter(Product.prodID == c)[0]
-        k = db_sess.query(Product)[0]
-        b.quantity = int(str(k.quantity)) - int(str(d))
+        b.quantity = int(str(b.quantity)) - int(str(d))
+        print(b.quantity)
     db_sess.commit()
 
 
@@ -362,7 +363,6 @@ def customer_purchases(custID):
     if len(o) != 0:
         for i in o:
             res.append(i)
-        print(res)
         return res
     else:
         res = ''
