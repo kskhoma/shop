@@ -169,8 +169,6 @@ def add_product(sellID, data):
            data["price"],
            data["desc"],
            sellID)
-   # profit = db_sess.query(Metad).all()[0]
-   # profit = profit.profit_rate
     prod = Product()
     prod.name = tup[0]
     prod.quantity = tup[1]
@@ -290,7 +288,7 @@ def place_order(prodID, custID, qty):
     db_sess = db_session.create_session()
     ord = Order()
     a = db_sess.query(Product).filter(Product.prodID == prodID)[0]
-    a = (custID, prodID, qty, datetime.datetime.now(), a.cost_price * qty, a.sell_price * qty, 'PLACED')
+    a = (custID, prodID, qty, datetime.datetime.now(), a.cost_price * int(qty), a.sell_price * int(qty), 'PLACED')
     ord.custID = a[0]
     ord.prodID = a[1]
     ord.quantity = a[2]
@@ -826,7 +824,6 @@ def my_purchases():
     if session['type'] == "Seller":
         abort(403)
     res = customer_purchases(session['userid'])
-    res = [tuple(res)]
     return render_template('my_purchases.html', purchases=res)
 
 
