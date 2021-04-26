@@ -221,7 +221,6 @@ def my_product_search(sellID, srchBy, category, keyword):
                     res.append(w)
         else:
             res = ''
-    print(res)
     return res
 
 
@@ -304,6 +303,7 @@ def place_order(prodID, custID, qty):
 
 
 def customer_orders(custID):
+    res = []
     db_sess = db_session.create_session()
     o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
                                     Order.status != 'RECIEVED').order_by(Order.date.desc())
@@ -311,9 +311,11 @@ def customer_orders(custID):
     if o.count() != 0 and p.count() != 0:
         o = db_sess.query(Order).filter(Order.prodID == Product.prodID, Order.custID == custID,
                                         Order.status != 'RECIEVED').order_by(Order.date.desc())[0]
-        p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
+        p = db_sess.query(Product).filter(Product.prodID == o.prodID)[0]
         a = (o.orderID, o.prodID, p.name, o.quantity, o.sell_price, o.date, o.status)
-        res = [i for i in a]
+        k = [i for i in a]
+        k = tuple(k)
+        res.append(k)
         print(res)
         return res
     else:
@@ -340,8 +342,8 @@ def seller_orders(sellID):
 
 def get_order_details(orderID):
     db_sess = db_session.create_session()
-    o = db_sess.query(Order).filter(Order.orderID == orderID, Order.prodID == Product.prodID)
-    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)
+    o = db_sess.query(Order).filter(Order.orderID == orderID, Order.prodID == Product.prodID)[0]
+    p = db_sess.query(Product).filter(Product.prodID == Order.prodID)[0]
     a = (o.custID, p.sellID, o.status)
     res = [i for i in a]
     return res
@@ -349,7 +351,7 @@ def get_order_details(orderID):
 
 def change_order_status(orderID, new_status):
     db_sess = db_session.create_session()
-    a = db_sess.query(Order).filter(Order.orderID == orderID)
+    a = db_sess.query(Order).filter(Order.orderID == orderID)[0]
     a.status = new_status
     if new_status == 'DISPACHED':
         c = db_sess.query(Order).filter(Order.orderID == orderID)[0]
@@ -771,9 +773,9 @@ def cancel_order(orderID):
     res = get_order_details(orderID)
     if len(res) == 0:
         abort(404)
-    custID = res[0][0]
-    sellID = res[0][1]
-    status = res[0][2]
+    custID = res[0]
+    sellID = res[1]
+    status = res[2]
     if session['type'] == "Seller" and sellID != session['userid']:
         abort(403)
     if session['type'] == "Customer" and custID != session['userid']:
@@ -793,9 +795,9 @@ def dispatch_order(orderID):
     res = get_order_details(orderID)
     if len(res) == 0:
         abort(404)
-    custID = res[0][0]
-    sellID = res[0][1]
-    status = res[0][2]
+    custID = res[0]
+    sellID = res[1]
+    status = res[2]
     if session['userid'] != sellID:
         abort(403)
     if status != "PLACED":
